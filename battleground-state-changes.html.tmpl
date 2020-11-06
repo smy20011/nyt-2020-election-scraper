@@ -112,12 +112,17 @@
     <script src="https://unpkg.com/dayjs@1.8.21/plugin/relativeTime.js"
             integrity="sha384-ojZWhTxW4vjtUz9IjuxEgcPAQQkFj7jlcOnGFp8IyTUTQpFisDT5u8zFh2d0GrSM"
             crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/dayjs@1.8.34/plugin/timezone.js"
+            integrity="sha384-GrbYgPSFFwCLN+1icsadEV6cA7r7wT//p0PI6UCveJFj5+VzsXLnyiFmVS10eEIn"
+            crossorigin="anonymous"></script>
 
     <script type="text/javascript">
         dayjs.extend(dayjs_plugin_relativeTime)
         dayjs.extend(dayjs_plugin_utc)
+        dayjs.extend(dayjs_plugin_timezone)
 
-        const prettyTime = timestamp => dayjs.utc(timestamp.replace(" UTC", ""), 'YYYY-MM-DD HH:MM:SS').fromNow()
+        const parseTimestamp = timestamp => dayjs.utc(timestamp.replace(" UTC", ""), 'YYYY-MM-DD HH:MM:SS');
+        const prettyTime = timestamp => parseTimestamp(timestamp).fromNow()
 
         const handleNode = node => {
             if (node.classList && node.classList.contains('timestamp')) {
@@ -128,7 +133,9 @@
                     timestamp = node.innerHTML;
                     node.setAttribute('data-timestamp', timestamp);
                 }
-                node.innerHTML = `<abbr class='pretty-timestamp' title='${timestamp}'>${prettyTime(timestamp)}</abbr>`;
+                const localTimezone = dayjs.tz.guess();
+                const localTimestamp = parseTimestamp(timestamp).tz(localTimezone).format("YYYY-MM-DD HH:mm");
+                node.innerHTML = `<abbr class='pretty-timestamp' title='${localTimestamp} ${localTimezone}'>${prettyTime(timestamp)}</abbr>`;
             }
         };
 
